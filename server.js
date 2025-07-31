@@ -28,6 +28,14 @@ mongoose.connect(process.env.MONGODB_URI)
 // Routes - Use the correct relative path
 import authRoutes from './Routes/auth.js';
 import protectedRoutes from './Routes/protected.js';
+import cors from 'cors';
+
+// Allow requests only from frontend origin
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true // if using cookies or Authorization headers
+}));
+
 app.use('/api/auth', authRoutes);
 app.use('/api', protectedRoutes);
 
