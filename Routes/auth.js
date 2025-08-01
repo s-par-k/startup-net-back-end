@@ -10,26 +10,26 @@ import startup from '../modules/startup.js';
 dotenv.config();
 const router = express.Router();
 
-// Helper function to get the correct model by role
-const getModelByRole = (role) => {
-  if (role === 'student') return student;
-  if (role === 'club') return club;
-  if (role === 'startup') return startup;
+// Helper function to get the correct model by userType
+const getModelByuserType = (userType) => {
+  if (userType === 'student') return student;
+  if (userType === 'club') return club;
+  if (userType === 'startup') return startup;
   return null;
 };
 
 // LOGIN
 router.post('/login', async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { email, password, userType } = req.body;
 
-    if (!email || !password || !role) {
-      return res.status(400).json({ message: 'Email, password, and role are required' });
+    if (!email || !password || !userType) {
+      return res.status(400).json({ message: 'Email, password, and userType are required' });
     }
 
-    const Model = getModelByRole(role);
+    const Model = getModelByuserType(userType);
     if (!Model) {
-      return res.status(400).json({ message: 'Invalid role' });
+      return res.status(400).json({ message: 'Invalid userType' });
     }
 
     const user = await Model.findOne({ email });
@@ -46,7 +46,7 @@ router.post('/login', async (req, res) => {
       {
         userId: user._id,
         email: user.email,
-        role,
+        userType,
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
@@ -58,7 +58,7 @@ router.post('/login', async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        role,
+        userType,
         profile: user
       }
     });
@@ -70,15 +70,15 @@ router.post('/login', async (req, res) => {
 // REGISTER
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, role, profile } = req.body;
+    const { email, password, userType, profile } = req.body;
 
-    if (!email || !password || !role || !profile) {
-      return res.status(400).json({ message: 'Email, password, role, and profile are required' });
+    if (!email || !password || !userType || !profile) {
+      return res.status(400).json({ message: 'Email, password, userType, and profile are required' });
     }
 
-    const Model = getModelByRole(role);
+    const Model = getModelByuserType(userType);
     if (!Model) {
-      return res.status(400).json({ message: 'Invalid role' });
+      return res.status(400).json({ message: 'Invalid userType' });
     }
 
     const existingUser = await Model.findOne({ email });
@@ -96,23 +96,22 @@ router.post('/register', async (req, res) => {
 
     await newUser.save();
 
-    const token = jwt.sign(
-      {
-        userId: newUser._id,
-        email: newUser.email,
-        role
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-    );
+    // const token = jwt.sign(
+    //   {
+    //     userId: newUser._id,
+    //     email: newUser.email,
+    //     userType
+    //   },
+    //   process.env.JWT_SECRET,
+    //   { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    // );
 
     res.status(201).json({
       message: 'User created successfully',
-      token,
       user: {
         id: newUser._id,
         email: newUser.email,
-        role,
+        userType,
         profile: newUser
       }
     });
